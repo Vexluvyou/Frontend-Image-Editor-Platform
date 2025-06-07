@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { MyApp, UserBoxProps } from "@/lib/services/my-app";
 import { AppKey } from "@/lib/services/key";
 import { HttpClient } from "@/lib/services/http-client";
+import Link from "next/link";
 
 interface PaymentData {
   id: string;
@@ -33,6 +34,7 @@ const Credits = () => {
   const [user, setUser] = useState<UserBoxProps>({ userId: "", username: "" }); // Initialize user with fallback values
   const [subscription, setSubscription] = useState<{ subscription_id: string } | null>(null);
   const [userPayment, setUserPayment] = useState<PaymentData | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,7 +46,6 @@ const Credits = () => {
         console.error("Failed to fetch payments:", error);
       }
     };
-
     fetchPayments();
   }, []);
 
@@ -82,13 +83,26 @@ const Credits = () => {
       return;
     }
 
+    // paddle.Checkout.open({
+    //   items: [
+    //     {
+    //       priceId,
+    //       quantity: 1,
+    //     },
+    //   ],
+    //   customData: {
+    //     user_id: user.userId,
+    //     username: user.username
+    //   },
+    //   settings: {
+    //     displayMode: 'overlay',
+    //     theme: 'light',
+    //     successUrl: `${window.location.origin}/subscriptions/success`,
+    //   },
+    // });
+
     paddle.Checkout.open({
-      items: [
-        {
-          priceId,
-          quantity: 1,
-        },
-      ],
+      items: [{ priceId, quantity: 1 }],
       customData: {
         user_id: user.userId,
         username: user.username
@@ -96,9 +110,10 @@ const Credits = () => {
       settings: {
         displayMode: 'overlay',
         theme: 'light',
-        successUrl: `${window.location.origin}/subscriptions/success`,
-      },
+        successUrl: `${window.location.href}?success=true`
+      }
     });
+
   };
 
   useEffect(() => {
@@ -107,6 +122,15 @@ const Credits = () => {
       setUserPayment(match || null);
     }
   }, [user, payments]);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("success") === "true") {
+      setShowSuccess(true);
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, []);
 
   return (
     <>
@@ -282,6 +306,56 @@ const Credits = () => {
 
         </ul>
       </section>
+
+      {/* Success Dialog */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="success-payment">
+            <div>
+              <Link href="/">
+                <Image
+                  src="/assets/images/logo-text.png"
+                  alt="logo"
+                  width={180}
+                  height={28}
+                />
+              </Link>
+            </div>
+
+            {/* Title and subtitle */}
+            <div className="flex items-start justify-between mb-6">
+              <div className="text-center flex-1 mt-10">
+                <Image
+                  src="/assets/icons/success.png" // Replace with your actual icon path
+                  alt="success"
+                  width={40}
+                  height={40}
+                  className="mx-auto mb-4"
+                />
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Payment Successful!
+                </h2>
+                <p className="text-gray-600 mt-2 mb-2">
+                  Your payment has been completed.
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="success-button"
+              onClick={() => {
+                setShowSuccess(false);
+                router.push("/subscriptions");
+                window.location.reload(); // Force full page refresh
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+
     </>
   );
 };

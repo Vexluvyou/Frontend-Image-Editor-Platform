@@ -234,9 +234,21 @@ const ManageSubscription = () => {
               <button
                 className="bg-red-600 hover:bg-red-700 font-semibold text-white px-4 py-2 rounded-md"
                 onClick={handleCancel}
+                
               >
                 Yes, Cancel
               </button>
+              
+              {/* <button
+                className="bg-red-600 hover:bg-red-700 font-semibold text-white px-4 py-2 rounded-md"
+                onClick={async () => {
+                  await handleCancel(); // Wait for cancellation to complete
+                  window.location.reload(); // Then refresh the page
+                }}
+              >
+                Yes, Cancel
+              </button> */}
+
             </div>
           </div>
         </div>

@@ -287,7 +287,7 @@
   }
 
   .success-payment {
-    @apply relative justify-self-center mt-32 bg-white rounded-lg shadow-xl p-8 w-full max-w-md;
+    @apply relative justify-self-center bg-white rounded-lg shadow-xl p-8 w-full max-w-md;
   }
 
   .manage-subscription {
