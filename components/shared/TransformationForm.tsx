@@ -1,6 +1,6 @@
 "use client"
 
-import { title } from "process"
+// import { title } from "process"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input"
 import { aspectRatioOptions, creditFee, defaultValues, transformationTypes } from "@/constants"
 import { CustomField } from "./CustomField"
 import { useEffect, useState, useTransition } from "react"
-import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils"
-import { getCldImageUrl } from "next-cloudinary"
+import { AspectRatioKey, debounce, deepMergeObjects, download, dataUrl, getImageSize } from "@/lib/utils"
+import { CldImage, getCldImageUrl } from "next-cloudinary"
 import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 
@@ -25,6 +25,8 @@ import TransformedImage from "./TransformedImage"
 import { HttpClient } from "@/lib/services/http-client"
 import { UserBoxProps } from "@/lib/services/my-app"
 import { AppKey } from "@/lib/services/key"
+import Image from "next/image"
+
 
 export const formSchema = z.object({
   title: z.string(),
@@ -50,6 +52,51 @@ interface PaymentData {
 
 const TransformationForm = ({ action, data = null, userId, type, creditBalance, config = null }: TransformationFormProps) => {
 
+  // Download Image
+
+  // Display Download Button After Transformed Image
+  // const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  //   e.preventDefault();
+
+  //   download(getCldImageUrl({
+  //     width: image?.width,
+  //     height: image?.height,
+  //     src: image?.publicId,
+  //     ...transformationConfig
+  //   }), form.getValues().title || 'transformed-image')
+  // }
+
+  // Display Download Button After Upload Image and Can download the Image Upload
+  // const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  //   e.preventDefault();
+
+  //   const url = getCldImageUrl({
+  //     width: image?.width,
+  //     height: image?.height,
+  //     src: image?.publicId,
+  //     ...(transformationConfig || {}) // fallback: empty if not transformed
+  //   });
+
+  //   const fileName = form.getValues().title || 'original-image';
+  //   download(url, fileName);
+  // }
+
+  const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    if (!image?.publicId) return alert("Please upload an image first.");
+
+    const url = getCldImageUrl({
+      width: image?.width,
+      height: image?.height,
+      src: image?.publicId,
+      ...(transformationConfig || {})
+    });
+
+    const fileName = form.getValues().title || 'downloaded-image';
+    download(url, fileName);
+  }
+
+
   const transformationType = transformationTypes[type];
   const [image, setImage] = useState(data)
   const [newTransformation, setNewTransformation] = useState<Transformations | null>(null);
@@ -57,6 +104,13 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const [isTransforming, setIsTransforming] = useState(false);
   const [transformationConfig, setTransformationConfig] = useState(config)
   const [isPending, startTransition] = useTransition();
+
+  // Display Download Button After Transformed Image
+  // const hasDownload = image?.publicId && transformationConfig;
+
+  // Display Download Button After Upload Image and Can download the Image Upload
+  // const hasDownload = !!image?.publicId;
+  const hasDownload = true;
 
   const http = new HttpClient();
 
@@ -67,7 +121,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const transformKey = `transformCount_${userId}`;
   const [transformCount, setTransformCount] = useState<number>(0);
 
-  const maxFreeTransforms = 2;
+  const maxFreeTransforms = 2; // Maximun Free User Download 2
 
   useEffect(() => {
     if (user?.userId && typeof window !== 'undefined') {
@@ -267,6 +321,8 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {creditBalance < Math.abs(creditFee)}
+
+        {/* Title Field */}
         <CustomField
           control={form.control}
           name="title"
@@ -403,7 +459,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
           ) : (
             <div /> // empty div to keep spacing
           )}
-          
+
           {/* <button className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-md hover:bg-blue-700 transition">
             Upload Image
           </button> */}
@@ -452,13 +508,58 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
           </Button>
 
           {/* Button to Save Image Transformation */}
-          <Button
+          {/* <Button
             type="submit"
-            className="save-button capitalize"
+            className="save-button capitalize gap-2"
             disabled={isSubmitting}
           >
+            <Image
+              src="/assets/icons/download.png"
+              alt="Add Image"
+              width={24}
+              height={24}
+            />
             {isSubmitting ? 'Submitting...' : 'Save Image'}
+          </Button> */}
+
+          {/* {hasDownload && (
+            <Button
+              type="button"
+              onClick={downloadHandler}
+              className="save-button capitalize gap-2"
+              disabled={isSubmitting}
+            >
+              <Image
+                src="/assets/icons/download.png"
+                alt="Download"
+                width={24}
+                height={24}
+              />
+              {isSubmitting ? 'Submitting...' : 'Download Image'}
+            </Button>
+          )} */}
+
+          <Button
+            type="button"
+            onClick={downloadHandler}
+            className="save-button capitalize gap-2"
+            disabled={isSubmitting || !image?.publicId}
+          >
+            <Image
+              src="/assets/icons/download.png"
+              alt="Download"
+              width={24}
+              height={24}
+              className="pb-[2px]"
+            />
+            {isSubmitting
+              ? 'Submitting...'
+              : !image?.publicId
+                ? 'No Image Yet'
+                : 'Download'}
           </Button>
+
+
         </div>
 
       </form>

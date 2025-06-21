@@ -148,6 +148,7 @@ const Home = () => {
 
       </section>
 
+      {/* Display Feature Bar */}
       <section className="sm:mt-6">
         <ul className="flex-center w-full gap-20">
           {navLinks.slice(1, 6).map((link, index) => {
@@ -156,7 +157,8 @@ const Home = () => {
               'bg-blue-500',
               'bg-green-500',
               'bg-yellow-500',
-              'bg-purple-500'
+              'bg-purple-500',
+              'bg-gray-500'
             ];
             const iconBg = bgColors[index % bgColors.length];
 

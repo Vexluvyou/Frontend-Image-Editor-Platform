@@ -40,7 +40,7 @@ const MediaUploader = ({
     toast({
       title: 'Image uploaded successfully',
       // description: '1 credit was deducted from your account',
-      duration: 5000,
+      duration: 1000,
       className: 'success-toast' 
     })
   }

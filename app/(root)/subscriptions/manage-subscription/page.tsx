@@ -85,10 +85,10 @@ const ManageSubscription = () => {
 
   if (!payment) {
     return (
-      <div className="p-6">
+      <div className="manage-subscription">
         <Header title="Manage Subscription" subtitle="No active subscription found." />
         <p className="mt-4 text-gray-600">You do not currently have any active subscriptions.</p>
-        <Button className="bg-indigo-600 text-white px-12 py-2 rounded-md mt-6" onClick={() => router.push("/subscriptions")}>
+        <Button className="bg-indigo-600 text-white px-12 py-2 rounded-md mt-16" onClick={() => router.push("/subscriptions")}>
           Subscribe Now
         </Button>
       </div>

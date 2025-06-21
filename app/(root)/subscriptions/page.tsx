@@ -152,7 +152,8 @@ const Credits = () => {
                   {plan.name}
                 </p>
                 <p className="h1-semibold text-dark-600">${plan.price}</p>
-                <p className="p-16-regular">{plan.credits} Credits</p>
+                <p className="p-16-regular mt-6"></p>
+                {/* <p className="p-16-regular">{plan.credits} Trials</p> */}
               </div>
 
               {/* Inclusions */}
@@ -234,7 +235,7 @@ const Credits = () => {
                     }
                   }}
                 >
-                  {userPayment ? "Check Plans" : "Subscribe"}
+                  {userPayment ? "View Subscription" : "Subscribe"}
                 </button>
               )}
 
@@ -295,7 +296,7 @@ const Credits = () => {
                       }
                     }}
                   >
-                    {userPayment ? "Check Plans" : "Subscribe"}
+                    {userPayment ? "View Subscription" : "Subscribe"}
 
                   </button>
                 )

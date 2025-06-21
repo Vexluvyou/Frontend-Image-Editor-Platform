@@ -76,23 +76,31 @@ const Profile = () => {
     <>
       <Header title="Profile" />
 
+      {/* Profile Section */}
       <div className="mt-8 p-4 shadow-md rounded-xl flex items-center justify-between">
         {/* User Info */}
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg">
-            {user?.username?.[0] || "U"}
+            {user?.username?.[0] || "A"}
           </div>
+
           <div>
             <p className="text-black font-semibold">{user?.username}</p>
             <p className="text-sm text-gray-600">{user?.email}</p>
           </div>
         </div>
+
+        <div>
+          <button className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+            Edit Profile</button>
+        </div>
       </div>
 
-      {/* Image Manipulation & Subscription Info */}
+      {/* Image Manipulation & Subscription Info Section */}
       <section className="profile mt-8 grid md:grid-cols-2 gap-8">
+
         {/* Image Manipulation Section */}
-        <div className="profile-image-manipulation">
+        {/* <div className="profile-image-manipulation">
           <p className="text-lg font-medium">IMAGE MANIPULATION DONE</p>
           <div className="mt-4 flex items-center gap-4">
             <Image
@@ -104,7 +112,7 @@ const Profile = () => {
             />
             <h2 className="text-2xl font-bold text-gray-800">0</h2>
           </div>
-        </div>
+        </div> */}
 
         {/* Subscription Info */}
         <div className="profile-balance">
@@ -131,9 +139,9 @@ const Profile = () => {
                     : "/subscriptions"
                 )
               }
-              className="subscription-button"
+              className="subscription-button rounded-md hover:bg-indigo-700"
             >
-              {userPayment ? "Check Plans" : "Subscribe"}
+              {userPayment ? "View Subscription" : "Subscribe"}
             </Button>
           </div>
         </div>
