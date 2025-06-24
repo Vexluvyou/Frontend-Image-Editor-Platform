@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 // import { title } from "process"
@@ -19,13 +20,15 @@ import { CldImage, getCldImageUrl } from "next-cloudinary"
 import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 
+import Image from "next/image"
 import MediaUploader from "./MediaUploader"
 import ButtonMediaUploader from "./ButtonMediaUploader"
 import TransformedImage from "./TransformedImage"
 import { HttpClient } from "@/lib/services/http-client"
 import { UserBoxProps } from "@/lib/services/my-app"
 import { AppKey } from "@/lib/services/key"
-import Image from "next/image"
+import { toast } from "@/components/ui/use-toast"
+
 
 
 export const formSchema = z.object({
@@ -53,37 +56,19 @@ interface PaymentData {
 const TransformationForm = ({ action, data = null, userId, type, creditBalance, config = null }: TransformationFormProps) => {
 
   // Download Image
-
   // Display Download Button After Transformed Image
-  // const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-  //   e.preventDefault();
-
-  //   download(getCldImageUrl({
-  //     width: image?.width,
-  //     height: image?.height,
-  //     src: image?.publicId,
-  //     ...transformationConfig
-  //   }), form.getValues().title || 'transformed-image')
-  // }
-
-  // Display Download Button After Upload Image and Can download the Image Upload
-  // const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-  //   e.preventDefault();
-
-  //   const url = getCldImageUrl({
-  //     width: image?.width,
-  //     height: image?.height,
-  //     src: image?.publicId,
-  //     ...(transformationConfig || {}) // fallback: empty if not transformed
-  //   });
-
-  //   const fileName = form.getValues().title || 'original-image';
-  //   download(url, fileName);
-  // }
-
   const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    if (!image?.publicId) return alert("Please upload an image first.");
+
+    if (!image?.publicId) {
+      toast({
+        title: "No image to download",
+        description: "Please upload an image first.",
+        duration: 3000,
+        className: "error-toast"
+      });
+      return;
+    }
 
     const url = getCldImageUrl({
       width: image?.width,
@@ -94,8 +79,20 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
 
     const fileName = form.getValues().title || 'downloaded-image';
     download(url, fileName);
-  }
 
+    const isTransformed = transformationConfig && Object.keys(transformationConfig).length > 0;
+
+    toast({
+      title: isTransformed
+        ? "Transformed image downloaded Successfully"
+        : "Original image downloaded Successfully",
+      description: isTransformed
+        ? `You downloaded the transformed image "${fileName}".`
+        : `You downloaded the original image "${fileName}".`,
+      duration: 3000,
+      className: "success-toast"
+    });
+  };
 
   const transformationType = transformationTypes[type];
   const [image, setImage] = useState(data)
@@ -105,11 +102,6 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const [transformationConfig, setTransformationConfig] = useState(config)
   const [isPending, startTransition] = useTransition();
 
-  // Display Download Button After Transformed Image
-  // const hasDownload = image?.publicId && transformationConfig;
-
-  // Display Download Button After Upload Image and Can download the Image Upload
-  // const hasDownload = !!image?.publicId;
   const hasDownload = true;
 
   const http = new HttpClient();
@@ -127,9 +119,18 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     if (user?.userId && typeof window !== 'undefined') {
       const transformKey = `transformCount_${user.userId}`;
       const stored = localStorage.getItem(transformKey);
+
       setTransformCount(stored ? parseInt(stored, 10) : 0);
     }
   }, [user]);
+
+  const clearTransformCount = () => {
+    if (user?.userId && typeof window !== "undefined") {
+      const transformKey = `transformCount_${user.userId}`;
+      localStorage.removeItem(transformKey);
+      setTransformCount(0); // Optionally reset state too
+    }
+  };
 
   // Assume `userPayment` is a boolean you already have
   const hasSubscription = !!userPayment;
@@ -185,7 +186,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   }, [user, payments]);
 
   // 2. Define a submit handler.
-  // Save Image 
+  // Save Image to Database
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
 
@@ -398,6 +399,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
                   <Input
                     value={field.value}
                     className="input-field"
+                    placeholder="color replacement"
                     onChange={(e) => onInputChangeHandler(
                       'color',
                       e.target.value,
@@ -442,14 +444,6 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
           />
         </div>
 
-        {/* Transformations Limit When Not Subscription */}
-
-        {/* {!hasSubscription && (
-          <p className="text-sm text-gray-500 text-right font-semibold">
-            Transformations used: {transformCount}/{maxFreeTransforms}
-          </p>
-        )} */}
-
         {/* Transformations Limit and Upload Button */}
         <div className="flex items-center justify-between w-full">
           {!hasSubscription ? (
@@ -460,8 +454,11 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
             <div /> // empty div to keep spacing
           )}
 
-          {/* <button className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-md hover:bg-blue-700 transition">
-            Upload Image
+          {/* Reset Transformation Count */}
+          {/* <button
+            className="flex items-center gap-2 px-4 py-2 text-white font-semibold bg-green-600 rounded-md transition w-fit"
+            onClick={clearTransformCount}>
+            Reset Transform Count
           </button> */}
 
           {/* Upload Image Button */}
@@ -487,7 +484,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
         <div className="flex flex-col gap-4 ">
           <Button
             type="button"
-            className="save-button capitalize"
+            className="save-button capitalize gap-2"
             disabled={
               isTransforming ||
               newTransformation === null ||
@@ -495,50 +492,16 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
             }
             onClick={onTransformHandler}
           >
-            {isTransforming ? 'Transforming...' : 'Apply Generate'}
-
-            {/* Show Transformations Use Limit or Unlimited */}
-            {/* {isTransforming
-              ? 'Transforming...'
-              : !hasSubscription && transformCount >= maxFreeTransforms
-                ? 'Limit Reached'
-                : `Apply Generate (${!hasSubscription ? `${transformCount}/${maxFreeTransforms}` : 'Unlimited'})`
-            } */}
-
-          </Button>
-
-          {/* Button to Save Image Transformation */}
-          {/* <Button
-            type="submit"
-            className="save-button capitalize gap-2"
-            disabled={isSubmitting}
-          >
             <Image
-              src="/assets/icons/download.png"
-              alt="Add Image"
+              src="/assets/icons/stars.png"
+              alt="Download"
               width={24}
               height={24}
             />
-            {isSubmitting ? 'Submitting...' : 'Save Image'}
-          </Button> */}
+            {isTransforming ? 'Transforming...' : 'Apply Generate'}
+          </Button>
 
-          {/* {hasDownload && (
-            <Button
-              type="button"
-              onClick={downloadHandler}
-              className="save-button capitalize gap-2"
-              disabled={isSubmitting}
-            >
-              <Image
-                src="/assets/icons/download.png"
-                alt="Download"
-                width={24}
-                height={24}
-              />
-              {isSubmitting ? 'Submitting...' : 'Download Image'}
-            </Button>
-          )} */}
-
+          {/* Button to Save Image Transformation */}
           <Button
             type="button"
             onClick={downloadHandler}
@@ -550,16 +513,13 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
               alt="Download"
               width={24}
               height={24}
-              className="pb-[2px]"
             />
             {isSubmitting
               ? 'Submitting...'
               : !image?.publicId
-                ? 'No Image Yet'
-                : 'Download'}
+                ? 'Download Image'
+                : 'Download Image'}
           </Button>
-
-
         </div>
 
       </form>

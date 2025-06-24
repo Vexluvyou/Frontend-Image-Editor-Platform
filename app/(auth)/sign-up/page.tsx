@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { toast } from "@/components/ui/use-toast";
+
 
 const SignUpPage = () => {
 
@@ -43,17 +45,29 @@ const SignUpPage = () => {
                 localStorage.setItem(AppKey.username, response.username);
                 localStorage.setItem(AppKey.email, response.email);
                 // showSnackbar({ tcype: 'success', message: 'Successfully logged in!' });
-                router.push("/");
+                toast({
+                    title: "You have successfully signed up.",
+                    description: `Welcome, ${response.username}!`,
+                    duration: 3000,
+                    className: 'success-toast',
+                    variant: "default",
+                });
 
+                router.push("/");
             }
             else {
+                console.log("Login failed, no accessToken");
+                alert("Signup failed: Invalid email already takend or password to short.");
+
                 // showSnackbar({
                 //   type: 'error',
                 //   message: 'Invalid login response from server'
                 // });
-                console.log("no");
+
             }
         } catch (error) {
+            alert("An error occurred during signup. Please try again.");
+
             // showSnackbar({
             //   type: 'error',
             //   message: 'An error occurred during login'

@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { toast } from "@/components/ui/use-toast";
+
 
 const SignInPage = () => {
 
@@ -20,6 +22,8 @@ const SignInPage = () => {
     password: ''
   });
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const handleInput = (e: any) => {
     const fieldName = e.target.name;
     const fieldValue = e.target.value;
@@ -29,6 +33,7 @@ const SignInPage = () => {
       [fieldName]: fieldValue
     }));
   };
+
   const submitForm = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -46,15 +51,49 @@ const SignInPage = () => {
         localStorage.setItem(AppKey.username, response.username);
         localStorage.setItem(AppKey.email, response.email);
         // showSnackbar({ tcype: 'success', message: 'Successfully logged in!' });
+        toast({
+          title: "You have successfully signed in.",
+          description: `Welcome back, ${response.username}!`,
+          duration: 3000,
+          className: 'success-toast',
+          variant: "default",
+        });
+
         router.push("/");
       } else {
-        // showSnackbar({
-        //   type: 'error',
-        //   message: 'Invalid login response from server'
-        // });
-        console.log("no");
+        console.log("Login failed, no accessToken");
+        alert("Login failed: Invalid email or password.");
+
+        // setErrorMessage("Invalid email or password.");
+
+        toast({
+          title: "Login failed",
+          description: "Invalid credentials or server error.",
+          variant: "destructive",
+          duration: 3000,
+          className: 'success-toast',
+        });
       }
+      // showSnackbar({
+      //   type: 'error',
+      //   message: 'Invalid login response from server'
+      // });
+      // console.log("no");
+
     } catch (error) {
+      alert("An error occurred during login. Please try again.");
+
+      // setErrorMessage("An error occurred during login. Please try again.");
+
+      // show failure toast here for invalid login
+      toast({
+        title: "Login failed",
+        description: "Invalid credentials or server error.",
+        variant: "destructive",
+        duration: 3000,
+        className: 'success-toast',
+      });
+
       // showSnackbar({
       //   type: 'error',
       //   message: 'An error occurred during login'
@@ -62,7 +101,13 @@ const SignInPage = () => {
     }
   };
 
-  useEffect(() => { }, []);
+  useEffect(() => {
+    // toast({
+    //   title: "Toast system check",
+    //   description: "If you see this toast, the system works!",
+    // });
+  }, []);
+
   return (
     <>
       <div className="card-container">
@@ -89,6 +134,22 @@ const SignInPage = () => {
 
           {/* User Input Form */}
           <form onSubmit={submitForm}>
+
+            {/* show error alert here */}
+            {/* {errorMessage && (
+              <div
+                style={{
+                  backgroundColor: "#fee2e2", // light red bg
+                  color: "#b91c1c",           // red text
+                  padding: "10px",
+                  borderRadius: "5px",
+                  marginBottom: "12px",
+                  fontWeight: "bold",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )} */}
 
             {/* Email Form */}
             <div>

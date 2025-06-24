@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 // import { SignedIn, auth } from "@clerk/nextjs";
 // import { Button } from "@/components/ui/button";
